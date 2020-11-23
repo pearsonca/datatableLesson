@@ -141,27 +141,23 @@ system.time(
 #' some data operations may entail all of the above
 system.time(
     print({
-        sub.dt <- subset(df,BENE_SEX_IDENT_CD == 1 & BENE_AGE_CAT_CD > 3)
-        order(sub.dt, sub.dt$CAR_HCPS_PMT_AMT)
-    }
-        order(
-            subset(df,BENE_SEX_IDENT_CD == 1 & BENE_AGE_CAT_CD > 3),
-            CAR_HCPS_PMT_AMT
-        )
-        ,
-        .SD[order(CAR_HCPS_PMT_AMT), .(CAR_HCPS_PMT_AMT, CUM_CAR_HCPS_PMT_AMT = cumsum(CAR_HCPS_PMT_AMT))],
-        keyby = .(BENE_AGE_CAT_CD)
-    ][,{
-        cross_ind <- which.max(CUM_CAR_HCPS_PMT_AMT/CUM_CAR_HCPS_PMT_AMT[.N] > .8)
-        .(
-            .N,
-            TOT_PMT_AMT = CUM_CAR_HCPS_PMT_AMT[.N],
-            CROSSN = cross_ind,
-            CROSS_PMT_AMT = CAR_HCPS_PMT_AMT[cross_ind],
-            CUM_CROSS_PMT_AMT = CUM_CAR_HCPS_PMT_AMT[cross_ind]
-        )
-    }, keyby = .(BENE_AGE_CAT_CD)
-    ])
+        sub.df <- subset(df,BENE_SEX_IDENT_CD == 1 & BENE_AGE_CAT_CD > 3)
+        ord.df <- sub.df[do.call(order, sub.df[,c("BENE_AGE_CAT_CD", "CAR_HCPS_PMT_AMT")]), ]
+        agg.df <- Reduce(rbind, by(ord.df, ord.df$BENE_AGE_CAT_CD, function(sdf) within(
+            sdf, CUM_CAR_HCPS_PMT_AMT <- cumsum(CAR_HCPS_PMT_AMT)
+        )[, c("BENE_AGE_CAT_CD", "CAR_HCPS_PMT_AMT", "CUM_CAR_HCPS_PMT_AMT")]))
+        fin.df <- Reduce(rbind, by(agg.df, agg.df$BENE_AGE_CAT_CD, function(sdf) {
+            n <- dim(sdf)[1]
+            cross_ind <- which.max(with(sdf, CUM_CAR_HCPS_PMT_AMT/CUM_CAR_HCPS_PMT_AMT[n]) > .8)
+            with(sdf, data.frame(
+                BENE_AGE_CAT_CD = BENE_AGE_CAT_CD[1],
+                N=n, TOT_PMT_AMT = CUM_CAR_HCPS_PMT_AMT[n],
+                CROSSN = cross_ind,
+                CROSS_PMT_AMT = CAR_HCPS_PMT_AMT[cross_ind],
+                CUM_CROSS_PMT_AMT = CUM_CAR_HCPS_PMT_AMT[cross_ind]
+            ))
+        }))
+    })
 )
 system.time(
     print(dt[
