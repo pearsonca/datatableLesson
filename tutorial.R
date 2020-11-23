@@ -26,7 +26,7 @@ system.time(
 )
 
 system.time(
-    dt <- fread(infile)
+    dt <- `???`("read in the data using data.tables fast function", 29, infile)
 )
 
 #' BASIC DATA REVIEW
@@ -40,14 +40,14 @@ df[, c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD")]
 #' this exact also works in data.table
 dt[, c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD")]
 #' but there are additional approaches:
-dt[, .(BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD)]
+`???`("select as a data.table BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD using idiomatic notation", 43)
 
 #' we might want to know what the unique combinations of some columns are:
 system.time(
     unique(df[, c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD")])
 )
 system.time(
-    unique(dt[, .(BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD)])
+    `???`("get the unique combinations of BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD as a data.table", 50)
 )
 
 #' or how many entries correspond to those unique combinations:
@@ -55,7 +55,7 @@ system.time(
     aggregate(cbind(N=CAR_LINE_ICD9_DGNS_CD) ~ BENE_SEX_IDENT_CD + BENE_AGE_CAT_CD, df, length)
 )
 system.time(
-    dt[, .N, .(BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD)]
+    `???`("get number of rows for each BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD combination as a data.table", 58)
 )
 
 #' WIDE VS LONG DATA
@@ -71,7 +71,7 @@ system.time(
     )
 )
 system.time(
-    long.dt <- melt(dt, id.vars = c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD"), variable.name = "measure")
+    long.dt <- `???`("reshape dt into long format, with keys BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD", 74)
 )
 #' note: data.table warns about funny business, reshape does not
 
@@ -82,7 +82,7 @@ system.time(
     sub.df <- subset(df, CAR_LINE_PRVDR_TYPE_CD == 5 & CAR_LINE_ICD9_DGNS_CD != "")
 )
 system.time(
-    sub.dt <- dt[CAR_LINE_PRVDR_TYPE_CD == 5 & CAR_LINE_ICD9_DGNS_CD != ""]
+    sub.dt <- `???`("filter the dt using the `i` argument", 85)
 )
 
 
@@ -91,13 +91,13 @@ system.time(
     print(aggregate(cbind(val=CAR_HCPS_PMT_AMT) ~ BENE_SEX_IDENT_CD + BENE_AGE_CAT_CD, df, mean))
 )
 system.time(
-    print(dt[, .(val = mean(CAR_HCPS_PMT_AMT)), by=.(BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD)])
+    print(`???`("using the `j` and `by` arguments to get the same result.", 94))
 )
 #' data.table also provides an easy interface for doing a variety of summary computations per group
 system.time(
-    print(dt[, .(
-        val = mean(CAR_HCPS_PMT_AMT), sd.val = sd(CAR_HCPS_PMT_AMT), .N
-    ), by=.(BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD)])
+    print(`???`(
+    "also get the standard deviation and number of samples.",
+    98))
 )
 
 #' ORDERING
@@ -105,20 +105,20 @@ system.time(
     print(df[do.call(order, df[,c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD", "CAR_HCPS_PMT_AMT")]), ])
 )
 system.time(
-    print(dt[order(BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD, CAR_HCPS_PMT_AMT)])
+    print(`???`("order the data.table by the same columns", 108))
 )
 #' data.table supports several other ordering approaches; need to reset dt to be useful comparison
 dt <- fread(infile)
 system.time(
-    print(setorder(dt, BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD, CAR_HCPS_PMT_AMT))
+    print(`???`("order the data.table by the same columns, using `setorder`", 113))
 )
 dt <- fread(infile)
 system.time(
-    print(setkey(dt, BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD, CAR_HCPS_PMT_AMT))
+    print(`???`("order the data.table by the same columns, using `setkey`", 117))
 )
 dt <- fread(infile)
 system.time(
-    print(dt[,.SD,keyby=.(BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD, CAR_HCPS_PMT_AMT)])
+    print(`???`("order the data.table by the same columns, using `keyby` argument", 121))
 )
 
 #' TRANSFORMING
@@ -130,7 +130,7 @@ system.time(
     df <- within(df, NEWCOL <- CAR_HCPS_PMT_AMT / CAR_LINE_CNT)
 )
 system.time(
-    dt[, NEWCOL := CAR_HCPS_PMT_AMT / CAR_LINE_CNT ]
+    `???`("create a NEWCOL using `:=` syntax", 133)
 )
 
 #' COMBINATIONS
@@ -157,19 +157,5 @@ system.time(
     })
 )
 system.time(
-    print(dt[
-        BENE_SEX_IDENT_CD == 1 & BENE_AGE_CAT_CD > 3,
-        .SD[order(CAR_HCPS_PMT_AMT), .(CAR_HCPS_PMT_AMT, CUM_CAR_HCPS_PMT_AMT = cumsum(CAR_HCPS_PMT_AMT))],
-        keyby = .(BENE_AGE_CAT_CD)
-    ][,{
-        cross_ind <- which.max(CUM_CAR_HCPS_PMT_AMT/CUM_CAR_HCPS_PMT_AMT[.N] > .8)
-        .(
-            .N,
-            TOT_PMT_AMT = CUM_CAR_HCPS_PMT_AMT[.N],
-            CROSSN = cross_ind,
-            CROSS_PMT_AMT = CAR_HCPS_PMT_AMT[cross_ind],
-            CUM_CROSS_PMT_AMT = CUM_CAR_HCPS_PMT_AMT[cross_ind]
-        )
-    }, keyby = .(BENE_AGE_CAT_CD)
-    ])
+    print(`???`("combine all the operations, ideally using chaining (e.g., dt[...][...]) to get the same result.", 160))
 )
