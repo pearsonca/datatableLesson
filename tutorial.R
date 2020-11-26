@@ -78,8 +78,19 @@ system.time(
         direction = "long"
     )
 )
+#' we could also do it with a loop:
+system.time({
+    other.long.df <- df[,1:3]
+    names(other.long.df)[3] <- "measure"
+    for (col in (1:dim(df)[2])[-(1:3)]) {
+        add.df <- df[,c(1:2,col)]
+        names(add.df) <- names(other.long.df)
+        other.long.df <- rbind(other.long.df, add.df, deparse.level = 0)
+    }  
+})
+
 system.time(
-    long.dt <- `???`("reshape dt into long format, with keys BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD", 82)
+    long.dt <- `???`("reshape dt into long format, with keys BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD", 93)
 )
 #' note: data.table warns about funny business, reshape does not
 
@@ -90,7 +101,7 @@ system.time(
     sub.df <- subset(df, CAR_LINE_PRVDR_TYPE_CD == 5 & CAR_LINE_ICD9_DGNS_CD != "")
 )
 system.time(
-    sub.dt <- `???`("filter the dt using the `i` argument", 93)
+    sub.dt <- `???`("filter the dt using the `i` argument", 104)
 )
 
 
@@ -99,13 +110,13 @@ system.time(
     print(aggregate(cbind(val=CAR_HCPS_PMT_AMT) ~ BENE_SEX_IDENT_CD + BENE_AGE_CAT_CD, df, mean))
 )
 system.time(
-    print(`???`("using the `j` and `by` arguments to get the same result.", 102))
+    print(`???`("using the `j` and `by` arguments to get the same result.", 113))
 )
 #' data.table also provides an easy interface for doing a variety of summary computations per group
 system.time(
     print(`???`(
     "also get the standard deviation and number of samples.",
-    108))
+    119))
 )
 
 #' ORDERING
@@ -113,20 +124,20 @@ system.time(
     print(df[do.call(order, df[,c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD", "CAR_HCPS_PMT_AMT")]), ])
 )
 system.time(
-    print(`???`("order the data.table by the same columns", 116))
+    print(`???`("order the data.table by the same columns", 127))
 )
 #' data.table supports several other ordering approaches; need to reset dt to be useful comparison
 dt <- fread(infile)
 system.time(
-    print(`???`("order the data.table by the same columns, using `setorder`", 121))
+    print(`???`("order the data.table by the same columns, using `setorder`", 132))
 )
 dt <- fread(infile)
 system.time(
-    print(`???`("order the data.table by the same columns, using `setkey`", 125))
+    print(`???`("order the data.table by the same columns, using `setkey`", 136))
 )
 dt <- fread(infile)
 system.time(
-    print(`???`("order the data.table by the same columns, using `keyby` argument", 129))
+    print(`???`("order the data.table by the same columns, using `keyby` argument", 140))
 )
 
 #' TRANSFORMING
@@ -138,7 +149,7 @@ system.time(
     df <- within(df, NEWCOL <- CAR_HCPS_PMT_AMT / CAR_LINE_CNT)
 )
 system.time(
-    `???`("create a NEWCOL using `:=` syntax", 141)
+    `???`("create a NEWCOL using `:=` syntax", 152)
 )
 
 #' COMBINATIONS

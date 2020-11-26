@@ -78,6 +78,17 @@ system.time(
         direction = "long"
     )
 )
+#' we could also do it with a loop:
+system.time({
+    other.long.df <- df[,1:3]
+    names(other.long.df)[3] <- "measure"
+    for (col in (1:dim(df)[2])[-(1:3)]) {
+        add.df <- df[,c(1:2,col)]
+        names(add.df) <- names(other.long.df)
+        other.long.df <- rbind(other.long.df, add.df, deparse.level = 0)
+    }  
+})
+
 system.time(
     long.dt <- melt(dt, id.vars = c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD"), variable.name = "measure")
 )
