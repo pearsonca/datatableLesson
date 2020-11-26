@@ -178,3 +178,8 @@ system.time(
 system.time(
     print(`???`("combine all the operations, ideally using chaining (e.g., dt[...][...]) to get the same result.", 168))
 )
+
+# WRITING IT OUT
+
+write.csv(fin.df)
+`???`("use data.table fast writing function.", 185)

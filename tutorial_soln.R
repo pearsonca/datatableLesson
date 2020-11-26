@@ -176,7 +176,7 @@ system.time(
     })
 )
 system.time(
-    print(dt[
+    print(fin.dt <- dt[
         BENE_SEX_IDENT_CD == 1 & BENE_AGE_CAT_CD > 3,
         .SD[order(CAR_HCPS_PMT_AMT), .(CAR_HCPS_PMT_AMT, CUM_CAR_HCPS_PMT_AMT = cumsum(CAR_HCPS_PMT_AMT))],
         keyby = .(BENE_AGE_CAT_CD)
@@ -192,3 +192,6 @@ system.time(
     }, keyby = .(BENE_AGE_CAT_CD)
     ])
 )
+
+write.csv(fin.df)
+fwrite(fin.dt)
