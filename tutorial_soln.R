@@ -37,7 +37,7 @@ print(dt)
 
 #' you will also likely want to look at particular columns, e.g.
 df[, c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD")]
-#' this exact also works in data.table
+#' this exact syntax also works in data.table
 dt[, c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD")]
 #' but there are additional approaches:
 dt[, .(BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD)]
@@ -54,6 +54,14 @@ system.time(
 system.time(
     aggregate(cbind(N=CAR_LINE_ICD9_DGNS_CD) ~ BENE_SEX_IDENT_CD + BENE_AGE_CAT_CD, df, length)
 )
+#' alternative base R approaches:
+#' this one doesn't return a data.frame
+bydf <- by(df, df[, c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD")], function(sdf) dim(sdf[2]))
+#' though you can combine all the elements, but this doesn't preserve the group labels:
+Reduce(rbind, bydf)
+#' a `by` object has matrix dimensions, so you could iterate over those names while combining, etc, etc
+#' we could also take the uniques we got earlier, iterate over the rows, and use a subsetting count
+
 system.time(
     dt[, .N, .(BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD)]
 )

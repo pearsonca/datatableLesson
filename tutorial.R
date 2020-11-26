@@ -37,7 +37,7 @@ print(dt)
 
 #' you will also likely want to look at particular columns, e.g.
 df[, c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD")]
-#' this exact also works in data.table
+#' this exact syntax also works in data.table
 dt[, c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD")]
 #' but there are additional approaches:
 `???`("select as a data.table BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD using idiomatic notation", 43)
@@ -54,8 +54,16 @@ system.time(
 system.time(
     aggregate(cbind(N=CAR_LINE_ICD9_DGNS_CD) ~ BENE_SEX_IDENT_CD + BENE_AGE_CAT_CD, df, length)
 )
+#' alternative base R approaches:
+#' this one doesn't return a data.frame
+bydf <- by(df, df[, c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD")], function(sdf) dim(sdf[2]))
+#' though you can combine all the elements, but this doesn't preserve the group labels:
+Reduce(rbind, bydf)
+#' a `by` object has matrix dimensions, so you could iterate over those names while combining, etc, etc
+#' we could also take the uniques we got earlier, iterate over the rows, and use a subsetting count
+
 system.time(
-    `???`("get number of rows for each BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD combination as a data.table", 58)
+    `???`("get number of rows for each BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD combination as a data.table", 66)
 )
 
 #' WIDE VS LONG DATA
@@ -71,7 +79,7 @@ system.time(
     )
 )
 system.time(
-    long.dt <- `???`("reshape dt into long format, with keys BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD", 74)
+    long.dt <- `???`("reshape dt into long format, with keys BENE_SEX_IDENT_CD, BENE_AGE_CAT_CD", 82)
 )
 #' note: data.table warns about funny business, reshape does not
 
@@ -82,7 +90,7 @@ system.time(
     sub.df <- subset(df, CAR_LINE_PRVDR_TYPE_CD == 5 & CAR_LINE_ICD9_DGNS_CD != "")
 )
 system.time(
-    sub.dt <- `???`("filter the dt using the `i` argument", 85)
+    sub.dt <- `???`("filter the dt using the `i` argument", 93)
 )
 
 
@@ -91,13 +99,13 @@ system.time(
     print(aggregate(cbind(val=CAR_HCPS_PMT_AMT) ~ BENE_SEX_IDENT_CD + BENE_AGE_CAT_CD, df, mean))
 )
 system.time(
-    print(`???`("using the `j` and `by` arguments to get the same result.", 94))
+    print(`???`("using the `j` and `by` arguments to get the same result.", 102))
 )
 #' data.table also provides an easy interface for doing a variety of summary computations per group
 system.time(
     print(`???`(
     "also get the standard deviation and number of samples.",
-    98))
+    108))
 )
 
 #' ORDERING
@@ -105,20 +113,20 @@ system.time(
     print(df[do.call(order, df[,c("BENE_SEX_IDENT_CD", "BENE_AGE_CAT_CD", "CAR_HCPS_PMT_AMT")]), ])
 )
 system.time(
-    print(`???`("order the data.table by the same columns", 108))
+    print(`???`("order the data.table by the same columns", 116))
 )
 #' data.table supports several other ordering approaches; need to reset dt to be useful comparison
 dt <- fread(infile)
 system.time(
-    print(`???`("order the data.table by the same columns, using `setorder`", 113))
+    print(`???`("order the data.table by the same columns, using `setorder`", 121))
 )
 dt <- fread(infile)
 system.time(
-    print(`???`("order the data.table by the same columns, using `setkey`", 117))
+    print(`???`("order the data.table by the same columns, using `setkey`", 125))
 )
 dt <- fread(infile)
 system.time(
-    print(`???`("order the data.table by the same columns, using `keyby` argument", 121))
+    print(`???`("order the data.table by the same columns, using `keyby` argument", 129))
 )
 
 #' TRANSFORMING
@@ -130,7 +138,7 @@ system.time(
     df <- within(df, NEWCOL <- CAR_HCPS_PMT_AMT / CAR_LINE_CNT)
 )
 system.time(
-    `???`("create a NEWCOL using `:=` syntax", 133)
+    `???`("create a NEWCOL using `:=` syntax", 141)
 )
 
 #' COMBINATIONS
@@ -157,5 +165,5 @@ system.time(
     })
 )
 system.time(
-    print(`???`("combine all the operations, ideally using chaining (e.g., dt[...][...]) to get the same result.", 160))
+    print(`???`("combine all the operations, ideally using chaining (e.g., dt[...][...]) to get the same result.", 168))
 )
