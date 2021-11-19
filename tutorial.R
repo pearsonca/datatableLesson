@@ -181,5 +181,5 @@ system.time(
 
 # WRITING IT OUT
 
-write.csv(fin.df)
+write.csv(fin.df, otfile)
 `???`("use data.table fast writing function.", 185)

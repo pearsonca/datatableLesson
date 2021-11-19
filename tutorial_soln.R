@@ -193,5 +193,5 @@ system.time(
     ])
 )
 
-write.csv(fin.df)
-fwrite(fin.dt)
+write.csv(fin.df, otfile)
+fwrite(fin.dt, otfile)
